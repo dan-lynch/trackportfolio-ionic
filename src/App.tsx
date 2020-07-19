@@ -30,11 +30,11 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <IonSplitPane contentId="main">
-          <Menu />
           <IonRouterOutlet id="main">
             <Route path="/page/:name" component={Page} exact />
-            <Redirect from="/" to="/page/Inbox" exact />
+            <Redirect from="/" to="/page/Dashboard" exact />
           </IonRouterOutlet>
+          <Menu />
         </IonSplitPane>
       </IonReactRouter>
     </IonApp>
