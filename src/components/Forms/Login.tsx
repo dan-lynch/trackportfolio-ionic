@@ -78,7 +78,7 @@ export default function Login(props: Props) {
 
   useEffect(() => {
     if (data &&  data.authenticate) {
-      const loginResult = await userService.login(data.authenticate)
+      const loginResult = userService.login(data.authenticate)
       if (loginResult) {
         appContext.setIsLoggedIn(true)
         gaService.loginSuccessEvent()
