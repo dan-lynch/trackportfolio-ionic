@@ -44,7 +44,7 @@ export default function LoggedOutHeader(props: Props) {
         <Toolbar>
         <div className={classes.title}>
           <Link to='/'>
-            <img src='/logo.svg' alt='trackportfol.io logo' className={classes.logo} />
+            <img src='/assets/icon/logo.svg' alt='trackportfol.io logo' className={classes.logo} />
           </Link>
         </div>
           <Button color='inherit' onClick={openLogin}>

@@ -25,7 +25,7 @@ export const ContextProvider = ({ children }: any) => {
   return <AppContext.Provider value={contextProps}>{children}</AppContext.Provider>
 }
 
-type ContextProps = {
+export type ContextProps = {
   signupEmail: string
   setSignupEmail: any
   stock: string
