@@ -1,0 +1,8 @@
+export const API_URL = process.env.REACT_APP_SERVER_URL || ''
+export const WS_URL = process.env.REACT_APP_WS_URL || ''
+export const API_KEY = process.env.REACT_APP_API_KEY || ''
+export const GA_ID = process.env.REACT_APP_GA_ID || ''
+export const USER = 'trackportfol.io-user'
+export const TOKEN = 'trackportfol.io-token'
+export const THEME = 'trackportfol.io-theme'
+export const DISMISS_UPDATE = 'trackportfol.io-dismiss-update-001'

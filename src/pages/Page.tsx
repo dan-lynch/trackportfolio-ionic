@@ -15,16 +15,10 @@ const Page: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton />
           </IonButtons>
-          <IonTitle>trackportfol.io</IonTitle>
+          <IonTitle>{name}</IonTitle>
         </IonToolbar>
       </IonHeader>
-
       <IonContent>
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">trackportfol.io</IonTitle>
-          </IonToolbar>
-        </IonHeader>
         <ExploreContainer name={name} />
       </IonContent>
     </IonPage>
