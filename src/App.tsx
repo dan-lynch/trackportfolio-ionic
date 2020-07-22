@@ -13,7 +13,7 @@ import Account from './pages/Account';
 import Home from './pages/Home';
 import ResetPass from './pages/ResetPass';
 import { userService as UserService } from './services/userService';
-import { lightTheme, darkTheme } from './helpers/theme'; 
+import { lightTheme } from './helpers/theme'; 
 import { GA_ID, TOKEN } from './helpers/constants';
 
 
@@ -68,7 +68,7 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <AppContext.Provider value={state}>
-        <ThemeProvider theme={state.isDarkTheme ? darkTheme : lightTheme}>
+        <ThemeProvider theme={lightTheme}>
       <IonReactRouter>
         <IonSplitPane contentId="main">
           <IonRouterOutlet id="main">
@@ -78,7 +78,7 @@ const App: React.FC = () => {
             <Route path="/resetpass/:token" component={ResetPass} exact />
             <Route path="/page/:name" component={Page} exact />
           </IonRouterOutlet>
-          <Menu />
+          {state.isLoggedIn ? <Menu /> : <></>}
         </IonSplitPane>
       </IonReactRouter>
       </ThemeProvider>

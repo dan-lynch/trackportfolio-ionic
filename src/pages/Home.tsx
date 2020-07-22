@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useContext } from 'react'
 import { withApollo } from '../components/withApollo'
 import { initApolloClient } from '../services/apolloService'
 import { Container, Typography, Box, Paper } from '@material-ui/core'
@@ -12,6 +12,7 @@ import Cookie from 'js-cookie'
 import { TOKEN } from '../helpers/constants'
 import { ModalOptions } from '../helpers/types'
 import { Alert } from '@material-ui/lab'
+import { AppContext } from '../context/AppContext'
 
 const useStyles = makeStyles(() => ({
   message: {
@@ -30,7 +31,8 @@ const useStyles = makeStyles(() => ({
 
 function Home() {
   const classes = useStyles()
-
+  const appContext = useContext(AppContext)
+  
   const [currentModal, setCurrentModal] = React.useState<ModalOptions>(ModalOptions.None)
   const openLoginModal = () => setCurrentModal(ModalOptions.Login)
   const openSignupModal = () => setCurrentModal(ModalOptions.SignUp)
@@ -39,12 +41,16 @@ function Home() {
 
   useEffect(() => {
     if (Cookie.getJSON(TOKEN)) {
-      window.location.replace('/dashboard')
+      if (appContext.isLoggedIn) {
+        window.location.replace('/dashboard')
+      } else {
+        Cookie.remove(TOKEN)
+      }
     }
-  }, [])
+  }, [appContext.isLoggedIn])
 
   return (
-    <Layout title='Home | trackportfol.io' openLogin={openLoginModal} openJoin={openSignupModal}>
+    <Layout title='HOME' openLogin={openLoginModal} openJoin={openSignupModal}>
       <Container maxWidth='md'>
         <Box my={2}>
           <Typography variant='h4' component='h1' gutterBottom>

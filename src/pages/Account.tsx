@@ -7,7 +7,7 @@ import { AppContext } from '../context/AppContext'
 import { Typography, Grid, Paper, Collapse, Button } from '@material-ui/core'
 import { Skeleton } from '@material-ui/lab'
 import { makeStyles, createStyles } from '@material-ui/core/styles'
-import Layout from '../components/Layout/LoggedInLayout'
+import Layout from '../components/Layout/IonicLayout'
 import NotificationComponent, { Notification } from '../components/Notification'
 import Modal from '../components/Modal'
 import UpdateUsernameForm from '../components/Forms/UpdateUsername'
@@ -21,6 +21,7 @@ const useStyles = makeStyles(() =>
   createStyles({
     paper: {
       padding: '1rem',
+      marginTop: '0.5rem',
     },
     account: {
       padding: '1rem 0 0 1rem !important',
@@ -43,7 +44,9 @@ const useStyles = makeStyles(() =>
   })
 )
 
-function Account() {
+
+const Account: React.FC = () => {
+
   const classes = useStyles()
   const appContext = useContext(AppContext)
 
@@ -100,13 +103,8 @@ function Account() {
   return (
     <>
       {toHome ? <Redirect to='/' /> : null }
-    <Layout title='Account | trackportfol.io'>
+    <Layout title='ACCOUNT'>
       <Grid container spacing={3}>
-        <Grid item xs={12} className={classes.account}>
-          <Typography variant='h4' component='h4' gutterBottom>
-            Your account
-          </Typography>
-        </Grid>
         <Collapse in={notification.show} className={classes.collapse}>
           <Grid item xs={12}>
             <NotificationComponent

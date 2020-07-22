@@ -5,7 +5,7 @@ import { Grid, Paper, Typography, TextField, Button, CircularProgress, Collapse 
 import { Skeleton } from '@material-ui/lab'
 import { makeStyles } from '@material-ui/core/styles'
 import NumberFormat from 'react-number-format'
-import Layout from '../components/Layout/LoggedInLayout'
+import Layout from '../components/Layout/IonicLayout'
 import StockCharts from '../components/StockChart'
 import SearchStock from '../components/SearchStock'
 import HoldingView from '../components/HoldingView'
@@ -31,7 +31,8 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
   },
   welcome: {
-    padding: '1rem 0 0 1rem !important',
+    padding: '1.5rem 0 0 1rem !important',
+    margin: '0 1rem',
   },
   welcomeText: {
     padding: '0',
@@ -56,7 +57,7 @@ const useStyles = makeStyles(() => ({
   },
   update: {
     width: '100%',
-    margin: '0.5rem 0.75rem'
+    margin: '0 0.75rem'
   }
 }))
 
@@ -182,7 +183,7 @@ function Dashboard() {
   return (
     <>
       {toHome ? <Redirect to='/' /> : null}
-      <Layout title='Dashboard | trackportfol.io'>
+      <Layout title='DASHBOARD'>
         <Grid container spacing={3}>
           <Grid item xs={12} className={classes.welcome}>
             <Typography variant='subtitle1' className={classes.welcomeText}>

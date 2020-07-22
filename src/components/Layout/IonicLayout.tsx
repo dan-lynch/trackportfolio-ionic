@@ -1,28 +1,28 @@
 import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import React from 'react';
-import { useParams } from 'react-router';
-import ExploreContainer from '../components/ExploreContainer';
-import './Page.css';
 
-const Page: React.FC = () => {
+interface LayoutProps {
+    title: string;
+    children: any;
+}
 
-  const { name } = useParams<{ name: string; }>();
+const Layout: React.FC<LayoutProps> = ({ title, children }) => {
 
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar color="primary">
           <IonButtons slot="start">
             <IonMenuButton />
           </IonButtons>
-          <IonTitle>{name}</IonTitle>
+          <IonTitle>{title}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <ExploreContainer name={name} />
+        {children}
       </IonContent>
     </IonPage>
   );
 };
 
-export default Page;
+export default Layout;
