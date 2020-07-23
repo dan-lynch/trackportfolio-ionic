@@ -1,6 +1,7 @@
-import ReactGA from 'react-ga'
-import { USER, TOKEN, THEME } from '../helpers/constants'
-import Cookie from 'js-cookie'
+import { Plugins } from '@capacitor/core';
+import ReactGA from 'react-ga';
+import { BehaviorSubject } from 'rxjs';
+import { USER, TOKEN } from '../helpers/constants';
 
 export type User = {
   userId: number
@@ -11,53 +12,76 @@ export type Token = {
   authToken: string
 }
 
-const currentUser = Cookie.getJSON(USER)
+const { Storage } = Plugins;
 
-const currentToken = Cookie.getJSON(TOKEN)
+const user = new BehaviorSubject<User | null>(null);
 
-const currentTheme = Cookie.getJSON(THEME)
+const token = new BehaviorSubject<Token | null>(JSON.parse(Storage.get({ key: USER })!))
 
 export const userService = {
   login,
   logout,
   storeUserData,
-  updateTheme,
-  get loggedInUser(): User | null {
-    return !!currentUser ? currentUser : null
+  get currentUser(): User | null {
+    return user.getValue()
   },
-  get token(): string | null {
-    return !!currentToken ? currentToken : null
+  get currentToken(): Token | null {
+    console.log('get currentToken' + JSON.stringify(token.getValue))
+    return token.value
   },
-  get theme(): string | null {
-    return !!currentTheme ? currentTheme : null
+  get isLoggedIn(): boolean {
+    return !!user.getValue()
   }
 }
 
 async function login(jwtToken: string) {
-  Cookie.set(TOKEN, jwtToken)
-  return true
+  await Storage.remove({ key: TOKEN });
+  await Storage.set({
+    key: TOKEN,
+    value: jwtToken
+  });
+  token.next({ authToken: jwtToken })
 }
 
-function logout() {
-  Cookie.remove(USER)
-  Cookie.remove(TOKEN)
-  return true
+async function logout() {
+  await Storage.clear();
+  user.next(null);
+  token.next(null);
 }
 
 async function storeUserData(data: any) {
-  const { id, username, darkTheme } = data.currentUser
+  const { id, username } = data.currentUser
   if (id) {
-    const user: User = { userId: id, username }
-    Cookie.set(USER, JSON.stringify(user))
-    updateTheme(!!darkTheme)
+    const userObj: User = { userId: id, username }
+    await Storage.remove({ key: USER });
+    await Storage.set({
+      key: USER,
+      value: JSON.stringify(userObj)
+    });
+    user.next(userObj)
     ReactGA.set({ userId: id })
-    return user
-  } else {
-    return null
   }
 }
 
-function updateTheme(isDarkTheme: boolean) {
-  Cookie.remove(THEME)
-  Cookie.set(THEME, isDarkTheme ? 'dark' : 'light')
-}
+// async function getUser() {
+//   const userObject = await Storage.get({ key: USER });
+//   return userObject.value ? JSON.parse(userObject.value) : null;
+// }
+
+// async function getToken() {
+//   const { value } = await Storage.get({ key: TOKEN });
+//   return value;
+// }
+
+// async function getTheme() {
+//   const { value } = await Storage.get({ key: THEME });
+//   return value;
+// }
+
+// async function updateTheme(isDarkTheme: boolean) {
+//   await Storage.remove({ key: THEME });
+//   await Storage.set({
+//     key: THEME,
+//     value: isDarkTheme ? 'dark' : 'light'
+//   });
+// }

@@ -4,18 +4,16 @@ import { onError } from '@apollo/link-error'
 import { setContext } from '@apollo/link-context'
 import { getMainDefinition } from 'apollo-utilities'
 import { userService } from '../services/userService'
-import { API_URL, WS_URL, TOKEN } from '../helpers/constants'
-import Cookie from 'js-cookie'
+import { API_URL, WS_URL } from '../helpers/constants'
 
 global.fetch = require('node-fetch')
 
 let globalApolloClient: any = null
 
 const logout = () => {
-  if (!!userService.loggedInUser) {
+  if (!userService.isLoggedIn) {
   userService.logout()
-  // eslint-disable-next-line no-restricted-globals
-  location.replace("/")
+  window.location.replace("/")
   }
 }
 
@@ -45,8 +43,8 @@ function createIsomorphLink() {
 }
 
 function createWebSocketLink() {
-  const token = Cookie.getJSON(TOKEN)
-  return token ? wsLinkwithAuth(token) : wsLinkwithoutAuth()
+  const token = userService.currentToken
+  return token ? wsLinkwithAuth(token.authToken) : wsLinkwithoutAuth()
 }
 
 const errorLink = onError(({ networkError, graphQLErrors }) => {
@@ -63,12 +61,12 @@ const errorLink = onError(({ networkError, graphQLErrors }) => {
 })
 
 const authLink = setContext((_, { headers }) => {
-  const token = Cookie.getJSON(TOKEN)
+  const token = userService.currentToken
   return token
     ? {
         headers: {
           ...headers,
-          authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token.authToken}`,
         },
       }
     : {

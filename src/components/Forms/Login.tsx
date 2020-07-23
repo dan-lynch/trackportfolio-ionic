@@ -80,18 +80,15 @@ export default function Login(props: Props) {
     if (data &&  data.authenticate) {
       const loginResult = userService.login(data.authenticate)
       if (loginResult) {
-        appContext.setIsLoggedIn(true)
         gaService.loginSuccessEvent()
         window.location.replace('/dashboard')
       } else {
-        appContext.setIsLoggedIn(false)
         userService.logout()
         gaService.loginFailedEvent()
         setNotification({ show: true, message: 'Sign in unsuccessful, please try again', type: 'error' })
       }
      }
      else if (data && !data.authenticate) {
-      appContext.setIsLoggedIn(false)
       userService.logout()
       gaService.loginFailedEvent()
       setNotification({ show: true, message: 'Sign in unsuccessful, please try again', type: 'error' })

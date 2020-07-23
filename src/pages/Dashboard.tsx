@@ -19,7 +19,7 @@ import { initApolloClient } from '../services/apolloService'
 import { Instrument, Holding } from '../helpers/types'
 import { isNumeric } from '../helpers/misc'
 import Cookie from 'js-cookie'
-import { TOKEN, DISMISS_UPDATE } from '../helpers/constants'
+import { DISMISS_UPDATE } from '../helpers/constants'
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -111,6 +111,14 @@ function Dashboard() {
       })
   }
 
+  const checkUser = async () => {
+    if (!userService.isLoggedIn) {
+      console.log('userService saying not logged in. Logging out...')
+      userService.logout()
+      setToHome(true)
+    }
+  }
+
   useEffect(() => {
     if (data && !error) {
       const holdings = data.currentUser.holdingsByUserId.nodes
@@ -118,7 +126,6 @@ function Dashboard() {
       calculateTotalHoldings(holdings)
       setUserId(data.currentUser.id)
       appContext.setIsDarkTheme(data.currentUser.darkTheme)
-      appContext.setIsLoggedIn(true)
       userService.storeUserData(data)
       setWelcomeMessage(`Welcome to your dashboard, ${data.currentUser.username}!`)
     }
@@ -127,7 +134,6 @@ function Dashboard() {
   useEffect(() => {
     if (error) {
       if (error.message === 'jwt malformed' || error.message === 'jwt expired') {
-        appContext.setIsLoggedIn(false)
         userService.logout()
         setToHome(true)
       }
@@ -135,12 +141,7 @@ function Dashboard() {
   }, [appContext, error])
 
   useEffect(() => {
-    if (!Cookie.getJSON(TOKEN)) {
-      appContext.setIsLoggedIn(false)
-      userService.logout()
-      setToHome(true)
-    }
-
+    checkUser();
     if (!Cookie.getJSON(DISMISS_UPDATE)) {
       setDashboardUpdate({
         show: true,

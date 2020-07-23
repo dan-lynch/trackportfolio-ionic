@@ -85,10 +85,8 @@ const Account: React.FC = () => {
   useEffect(() => {
     if (currentUser.data && !currentUser.error) {
       setUsername(currentUser.data.currentUser.username)
-      appContext.setIsLoggedIn(true)
       userService.storeUserData(currentUser.data)
     } else if (currentUser.data && currentUser.error) {
-      appContext.setIsLoggedIn(false)
       userService.logout()
       setToHome(true)
     }

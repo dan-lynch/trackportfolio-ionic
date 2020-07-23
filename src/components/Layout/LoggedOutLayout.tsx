@@ -1,7 +1,7 @@
 import React from 'react'
 import { Container } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import LoggedOutHeader from '../Header/LoggedOutHeader'
+import LoggedOutHeader from './LoggedOutHeader'
 
 const useStyles = makeStyles(() => ({
   root: {

@@ -12,7 +12,7 @@ import {
 	IonButton
 } from '@ionic/react';
 import { makeStyles } from '@material-ui/core/styles';
-import React, { useContext } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import {
 	homeOutline,
@@ -25,7 +25,6 @@ import {
 import './Menu.css';
 import Logo from '../assets/logo_light.svg';
 import { withApollo } from '../components/withApollo'
-import { AppContext } from '../context/AppContext';
 import { userService } from '../services/userService';
 import { Typography } from '@material-ui/core';
 
@@ -64,12 +63,10 @@ const useStyles = makeStyles(() => ({
 const Menu: React.FC = () => {
 	const location = useLocation();
 	const classes = useStyles();
-	const appContext = useContext(AppContext);
 	// const [updateTheme] = useMutation(graphqlService.UPDATE_THEME);
 
 	const logout = () => {
     userService.logout();
-    appContext.setIsLoggedIn(false);
     window.location.replace('/');
 	}
 

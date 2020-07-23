@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import React, { useEffect } from 'react'
 import { withApollo } from '../components/withApollo'
 import { initApolloClient } from '../services/apolloService'
 import { Container, Typography, Box, Paper } from '@material-ui/core'
@@ -8,11 +8,9 @@ import Modal from '../components/Modal'
 import LoginForm from '../components/Forms/Login'
 import SignUpForm from '../components/Forms/SignUp'
 import ForgotPassForm from '../components/Forms/ForgotPass'
-import Cookie from 'js-cookie'
-import { TOKEN } from '../helpers/constants'
 import { ModalOptions } from '../helpers/types'
 import { Alert } from '@material-ui/lab'
-import { AppContext } from '../context/AppContext'
+import { userService } from '../services/userService'
 
 const useStyles = makeStyles(() => ({
   message: {
@@ -31,7 +29,6 @@ const useStyles = makeStyles(() => ({
 
 function Home() {
   const classes = useStyles()
-  const appContext = useContext(AppContext)
   
   const [currentModal, setCurrentModal] = React.useState<ModalOptions>(ModalOptions.None)
   const openLoginModal = () => setCurrentModal(ModalOptions.Login)
@@ -39,15 +36,15 @@ function Home() {
   const openForgotPassModal = () => setCurrentModal(ModalOptions.ForgotPass)
   const closeModal = () => setCurrentModal(ModalOptions.None)
 
-  useEffect(() => {
-    if (Cookie.getJSON(TOKEN)) {
-      if (appContext.isLoggedIn) {
-        window.location.replace('/dashboard')
-      } else {
-        Cookie.remove(TOKEN)
-      }
+  const checkUser = async () => {
+    if (userService.isLoggedIn) {
+      window.location.replace('/dashboard')
     }
-  }, [appContext.isLoggedIn])
+  }
+
+  useEffect(() => {
+    checkUser();
+  }, [])
 
   return (
     <Layout title='HOME' openLogin={openLoginModal} openJoin={openSignupModal}>

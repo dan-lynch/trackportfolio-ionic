@@ -82,7 +82,6 @@ export default function SignUp(props: Props) {
   }
 
   async function onError() {
-    appContext.setIsLoggedIn(false)
     userService.logout()
     gaService.registerFailedEvent()
     setNotification({
