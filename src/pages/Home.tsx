@@ -37,7 +37,7 @@ function Home() {
   const closeModal = () => setCurrentModal(ModalOptions.None)
 
   const checkUser = async () => {
-    if (userService.isLoggedIn) {
+    if (userService.currentToken) {
       window.location.replace('/dashboard')
     }
   }

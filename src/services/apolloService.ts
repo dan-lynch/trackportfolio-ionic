@@ -11,7 +11,7 @@ global.fetch = require('node-fetch')
 let globalApolloClient: any = null
 
 const logout = () => {
-  if (!userService.isLoggedIn) {
+  if (!userService.currentToken) {
   userService.logout()
   window.location.replace("/")
   }

@@ -11,9 +11,9 @@ import Dashboard from './pages/Dashboard';
 import Account from './pages/Account';
 import Home from './pages/Home';
 import ResetPass from './pages/ResetPass';
-import { userService } from './services/userService'
 import { lightTheme } from './helpers/theme'; 
 import { GA_ID } from './helpers/constants';
+import { userService } from './services/userService';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -74,7 +74,7 @@ const App: React.FC = () => {
             <Route path="/resetpass/:token" component={ResetPass} exact />
             <Route path="/page/:name" component={Page} exact />
           </IonRouterOutlet>
-          {userService.isLoggedIn ? <Menu /> : <></>}
+          <Menu />
         </IonSplitPane>
       </IonReactRouter>
       </ThemeProvider>

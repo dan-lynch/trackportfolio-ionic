@@ -12,7 +12,7 @@ import {
 	IonButton
 } from '@ionic/react';
 import { makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
 	homeOutline,
@@ -63,31 +63,20 @@ const useStyles = makeStyles(() => ({
 const Menu: React.FC = () => {
 	const location = useLocation();
 	const classes = useStyles();
-	// const [updateTheme] = useMutation(graphqlService.UPDATE_THEME);
+	const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!userService.currentToken);
 
 	const logout = () => {
     userService.logout();
     window.location.replace('/');
 	}
 
-	// const handleUpdateTheme = () => {
-  //   const currentTheme = appContext.isDarkTheme;
-  //   appContext.setIsDarkTheme(!currentTheme);
-  //   userService.updateTheme(!currentTheme);
-  //   storeUserTheme(!currentTheme);
-	// }
-	
-	// const storeUserTheme = (darkTheme: boolean) => {
-  //   updateTheme({ variables: { userDarkTheme: darkTheme } }).then((response) => {
-  //     if (response.data.updateTheme.updatedTheme.success) {
-  //       gaService.themeUpdateSuccessEvent();
-  //     } else {
-  //       gaService.themeUpdateFailedEvent();
-  //     }
-  //   })
-  // }
+  useEffect(() => {
+    userService.currentToken ? setIsLoggedIn(true) : setIsLoggedIn(false)
+  }, [])
 	
 	return (
+		<>
+	{isLoggedIn && (
 		<IonMenu className={classes.menu} contentId="main" type="overlay">
 			<IonContent>
 				<IonRouterLink href="/" auto-hide="false">
@@ -111,10 +100,6 @@ const Menu: React.FC = () => {
 						);
 					})}
 				</IonList>
-				{/* <IonButton expand ='block' onClick={handleUpdateTheme} className="ion-activatable ripple-parent">
-					<IonIcon ios={contrastOutline} md={contrastSharp} />
-					<IonRippleEffect type="unbounded" />
-				</IonButton> */}
 			</IonContent>
 			<IonFooter style={{textAlign: 'right'}}>
 			<IonButton
@@ -125,9 +110,11 @@ const Menu: React.FC = () => {
 				<IonIcon slot="start" ios={logOutOutline} md={logOutSharp} />
 				<IonLabel>Logout</IonLabel>
 			</IonButton>
-			<Typography variant='caption'>trackportfol.io BETA v0.1.2</Typography>
+			<Typography variant='caption'>trackportfol.io BETA v1.0.3</Typography>
 			</IonFooter>
 		</IonMenu>
+	)}
+	</>
 	);
 };
 

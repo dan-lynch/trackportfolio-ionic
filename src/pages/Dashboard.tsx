@@ -112,7 +112,7 @@ function Dashboard() {
   }
 
   const checkUser = async () => {
-    if (!userService.isLoggedIn) {
+    if (!userService.currentToken) {
       console.log('userService saying not logged in. Logging out...')
       userService.logout()
       setToHome(true)
