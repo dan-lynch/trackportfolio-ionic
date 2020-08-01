@@ -4,16 +4,14 @@ import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { ThemeProvider } from '@material-ui/core/styles';
 import ReactGA from 'react-ga'
-import { AppContext, ContextProps } from './context/AppContext';
+import { AppContext, ContextProps } from './context/ContextProvider';
 import Menu from './components/Menu';
 import Page from './pages/Page';
 import Dashboard from './pages/Dashboard';
 import Account from './pages/Account';
 import Home from './pages/Home';
-import ResetPass from './pages/ResetPass';
 import { lightTheme } from './helpers/theme'; 
 import { GA_ID } from './helpers/constants';
-import { userService } from './services/userService';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -36,24 +34,14 @@ import './theme/variables.css';
 
 const App: React.FC = () => {
 
-  const [signupEmail, setSignupEmail] = useState<string>('');
-  const [stock, setStock] = useState<string>('');
-  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
-  const [resetPassSuccess, setResetPassSuccess] = useState<boolean>(false);
-  const [userToken, setUserToken] = useState<string>('');
+  const [stock, setStock] = useState<string>('')
+  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false)
 
   const state: ContextProps = {
-    signupEmail,
-    setSignupEmail,
     stock,
     setStock,
     isDarkTheme,
-    setIsDarkTheme,
-    userService,
-    resetPassSuccess,
-    setResetPassSuccess,
-    userToken,
-    setUserToken
+    setIsDarkTheme
   };
 
   useEffect(() => {
@@ -71,7 +59,6 @@ const App: React.FC = () => {
             <Route path="/" component={Home} exact />
             <Route path="/dashboard" component={Dashboard} exact />
             <Route path="/account" component={Account} exact />
-            <Route path="/resetpass/:token" component={ResetPass} exact />
             <Route path="/page/:name" component={Page} exact />
           </IonRouterOutlet>
           <Menu />

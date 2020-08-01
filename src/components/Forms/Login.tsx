@@ -1,5 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { useLazyQuery } from '@apollo/client'
+import React, { useState, useContext } from 'react'
 import {
   Grid,
   Typography,
@@ -15,10 +14,9 @@ import Visibility from '@material-ui/icons/Visibility'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 import { makeStyles, createStyles } from '@material-ui/core/styles'
 import { useForm } from 'react-hook-form'
-import { AppContext } from '../../context/AppContext'
-import { graphqlService } from '../../services/graphql'
+import { AppContext } from '../../context/ContextProvider'
 import { gaService } from '../../services/gaService'
-import { userService } from '../../services/userService'
+import { authService } from '../../services/authService'
 import NotificationComponent, { Notification } from '../../components/Notification'
 
 const useStyles = makeStyles((theme) =>
@@ -53,19 +51,33 @@ type Props = {
 export default function Login(props: Props) {
   const { openSignupForm, openForgotPassForm } = props
 
-  const [notification, setNotification] = useState<Notification>({ show: false })
-  const [showPassword, setShowPassword] = useState<boolean>(false)
-
   const classes = useStyles()
   const appContext = useContext(AppContext)
+
+  const [notification, setNotification] = useState<Notification>({ show: false })
+  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false)
+
   const { register, handleSubmit, errors } = useForm()
 
-  const [authenticate, { loading, data }] = useLazyQuery(graphqlService.AUTHENTICATE)
-
-  const onSubmit = (values: any) => {
+  const onSubmit = async (values: any) => {
+    setLoading(true)
     setNotification({ show: false, type: notification.type })
     const { email, password } = values
-    authenticate({ variables: { email: email, password: password } })
+    const isAuthenticated = await authService.signin(email, password)
+    if (isAuthenticated) {
+      gaService.loginSuccessEvent()
+      setLoading(false)
+      window.location.replace('/dashboard')
+    } else {
+      onError()
+    }
+  }
+
+  const onError = () => {
+    gaService.loginFailedEvent()
+    setNotification({ show: true, message: 'Sign in unsuccessful, please try again', type: 'error' })
+    setLoading(false)
   }
 
   const handleClickShowPassword = () => {
@@ -75,38 +87,6 @@ export default function Login(props: Props) {
   const handleMouseDownPassword = (event: any) => {
     event.preventDefault()
   }
-
-  useEffect(() => {
-    if (data &&  data.authenticate) {
-      const loginResult = userService.login(data.authenticate)
-      if (loginResult) {
-        gaService.loginSuccessEvent()
-        window.location.replace('/dashboard')
-      } else {
-        userService.logout()
-        gaService.loginFailedEvent()
-        setNotification({ show: true, message: 'Sign in unsuccessful, please try again', type: 'error' })
-      }
-     }
-     else if (data && !data.authenticate) {
-      userService.logout()
-      gaService.loginFailedEvent()
-      setNotification({ show: true, message: 'Sign in unsuccessful, please try again', type: 'error' })
-     }
-    }, [appContext, data])
-
-  useEffect(() => {
-    if (appContext.signupEmail) {
-      setNotification({ show: true, message: 'Account created successfully! You can now sign in', type: 'success' })
-    }
-  }, [appContext.signupEmail])
-
-  useEffect(() => {
-    if (appContext.resetPassSuccess) {
-      setNotification({ show: true, message: 'Password updated successfully! You can now sign in', type: 'success' })
-      appContext.setResetPassSuccess(false)
-    }
-  }, [appContext])
 
   return (
     <React.Fragment>
@@ -132,7 +112,6 @@ export default function Login(props: Props) {
             })}
             name='email'
             label='Email Address'
-            defaultValue={!!appContext.signupEmail ? appContext.signupEmail : ''}
             variant='outlined'
             fullWidth
             autoFocus

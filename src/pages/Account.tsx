@@ -1,20 +1,18 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { Redirect } from 'react-router-dom'
-import { useQuery } from '@apollo/client'
 import { withApollo } from '../components/withApollo'
 import { initApolloClient } from '../services/apolloService'
-import { AppContext } from '../context/AppContext'
+import { AppContext } from '../context/ContextProvider'
 import { Typography, Grid, Paper, Collapse, Button } from '@material-ui/core'
 import { Skeleton } from '@material-ui/lab'
 import { makeStyles, createStyles } from '@material-ui/core/styles'
 import Layout from '../components/Layout/IonicLayout'
 import NotificationComponent, { Notification } from '../components/Notification'
 import Modal from '../components/Modal'
-import UpdateUsernameForm from '../components/Forms/UpdateUsername'
+import UpdateDisplayNameForm from '../components/Forms/UpdateDisplayName'
 import UpdateEmailForm from '../components/Forms/UpdateEmail'
 import UpdatePasswordForm from '../components/Forms/UpdatePassword'
-import { graphqlService } from '../services/graphql'
-import { userService } from '../services/userService'
+import { authService } from '../services/authService'
 import { AccountModalOptions } from '../helpers/types'
 
 const useStyles = makeStyles(() =>
@@ -51,29 +49,26 @@ const Account: React.FC = () => {
   const appContext = useContext(AppContext)
 
   const [notification, setNotification] = useState<Notification>({ show: false })
-  const [username, setUsername] = useState<string>('')
+  const [displayName, setDisplayName] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [ toHome, setToHome ] = useState<boolean>(false)
 
   const [currentModal, setCurrentModal] = React.useState<AccountModalOptions>(AccountModalOptions.None)
-  const openUsernameModal = () => setCurrentModal(AccountModalOptions.Username)
+  const openDisplayNameModal = () => setCurrentModal(AccountModalOptions.DisplayName)
   const openEmailModal = () => setCurrentModal(AccountModalOptions.Email)
   const openPasswordModal = () => setCurrentModal(AccountModalOptions.Password)
   const closeModal = () => setCurrentModal(AccountModalOptions.None)
 
-  const currentUser = useQuery(graphqlService.CURRENT_USER)
-  const userEmail = useQuery(graphqlService.GET_USER_EMAIL)
-
-  const handleUpdatedUsername = (username: string) => {
+  const handleUpdatedDisplayName = (displayName: string) => {
     closeModal()
-    setUsername(username)
-    setNotification({ show: true, message: 'Your username has been successfully updated', type: 'success' })
+    setDisplayName(displayName)
+    setNotification({ show: true, message: 'Your display name has been successfully updated', type: 'success' })
   }
 
   const handleUpdatedEmail = (email: string) => {
     closeModal()
     setEmail(email)
-    setNotification({ show: true, message: 'Your email has been successfully updated', type: 'success' })
+    setNotification({ show: true, message: 'Your email address has been successfully updated', type: 'success' })
   }
 
   const handleUpdatedPassword = () => {
@@ -83,20 +78,23 @@ const Account: React.FC = () => {
   }
 
   useEffect(() => {
-    if (currentUser.data && !currentUser.error) {
-      setUsername(currentUser.data.currentUser.username)
-      userService.storeUserData(currentUser.data)
-    } else if (currentUser.data && currentUser.error) {
-      userService.logout()
-      setToHome(true)
+    async function setUser() {
+      if (authService.currentUser) {
+        setDisplayName(authService.currentUser.displayName || 'No display name set')
+        setEmail(authService.currentUser.email || 'No email set')
+      } else {
+        const updatedUser = await authService.refreshUser()
+        if (updatedUser) {
+          setDisplayName(updatedUser.displayName || 'No display name set')
+          setEmail(updatedUser.email || 'No email set')
+        } else {
+          authService.signout()
+          setToHome(true)
+        }
+      }
     }
-  }, [currentUser, appContext])
-
-  useEffect(() => {
-    if (userEmail.data?.getUserEmail?.email && !currentUser.error) {
-      setEmail(userEmail.data.getUserEmail.email)
-    }
-  }, [userEmail, currentUser.error])
+    setUser()
+  }, [])
 
   return (
     <>
@@ -114,15 +112,15 @@ const Account: React.FC = () => {
         </Collapse>
         <Grid item md={6} xs={12}>
           <Paper className={classes.paper}>
-            {!!username ? (
+            {!!displayName ? (
               <Grid container spacing={2}>
                 <Grid item sm={5} xs={4}>
                   <Typography variant='subtitle2' className={classes.subtitle}>
-                    Username
+                    Display Name
                   </Typography>
                 </Grid>
                 <Grid item sm={7} xs={8}>
-                  <Typography>{username}</Typography>
+                  <Typography>{displayName}</Typography>
                 </Grid>
               </Grid>
             ) : (
@@ -157,13 +155,13 @@ const Account: React.FC = () => {
         <Grid item md={6} xs={12}>
           <Paper className={classes.paper}>
             <Button
-              aria-label='Change Username'
+              aria-label='Update Display Name'
               fullWidth
               variant={appContext.isDarkTheme ? 'outlined' : 'contained'}
               color='secondary'
               className={classes.button}
-              onClick={openUsernameModal}>
-              Change Username
+              onClick={openDisplayNameModal}>
+              Change Display Name
             </Button>
             <Button
               aria-label='Update Email'
@@ -187,12 +185,12 @@ const Account: React.FC = () => {
         </Grid>
       </Grid>
       <Modal
-        open={currentModal === AccountModalOptions.Username}
+        open={currentModal === AccountModalOptions.DisplayName}
         onClose={closeModal}
-        label='Change Username form'
-        title='Change username'
-        titleId='change-username'>
-        <UpdateUsernameForm currentUsername={username} usernameUpdated={handleUpdatedUsername} />
+        label='Change Display Name form'
+        title='Change display name'
+        titleId='change-displayname'>
+        <UpdateDisplayNameForm currentDisplayName={displayName} displayNameUpdated={handleUpdatedDisplayName} />
       </Modal>
       <Modal
         open={currentModal === AccountModalOptions.Email}

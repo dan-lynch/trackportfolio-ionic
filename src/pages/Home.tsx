@@ -10,7 +10,7 @@ import SignUpForm from '../components/Forms/SignUp'
 import ForgotPassForm from '../components/Forms/ForgotPass'
 import { ModalOptions } from '../helpers/types'
 import { Alert } from '@material-ui/lab'
-import { userService } from '../services/userService'
+import { authService } from '../services/authService'
 
 const useStyles = makeStyles(() => ({
   message: {
@@ -37,7 +37,7 @@ function Home() {
   const closeModal = () => setCurrentModal(ModalOptions.None)
 
   const checkUser = async () => {
-    if (userService.currentToken) {
+    if (authService.currentToken) {
       window.location.replace('/dashboard')
     }
   }

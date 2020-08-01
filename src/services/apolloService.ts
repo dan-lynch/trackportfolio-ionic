@@ -3,38 +3,20 @@ import { WebSocketLink } from '@apollo/link-ws'
 import { onError } from '@apollo/link-error'
 import { setContext } from '@apollo/link-context'
 import { getMainDefinition } from 'apollo-utilities'
-import { userService } from '../services/userService'
-import { API_URL, WS_URL } from '../helpers/constants'
+import { authService } from './authService'
+import { API_URL, WS_URL, TOKEN } from '../helpers/constants'
+import Cookie from 'js-cookie'
 
 global.fetch = require('node-fetch')
 
 let globalApolloClient: any = null
 
 const logout = () => {
-  if (!userService.currentToken) {
-  userService.logout()
-  window.location.replace("/")
+  if (!Cookie.getJSON(TOKEN)) {
+    authService.signout()
+    window.location.replace('/')
   }
 }
-
-const wsLinkwithoutAuth = () =>
-  new WebSocketLink({
-    uri: WS_URL,
-    options: {
-      reconnect: true,
-    },
-  })
-
-const wsLinkwithAuth = (token: string) =>
-  new WebSocketLink({
-    uri: WS_URL,
-    options: {
-      reconnect: true,
-      connectionParams: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  })
 
 function createIsomorphLink() {
   return new HttpLink({
@@ -43,8 +25,16 @@ function createIsomorphLink() {
 }
 
 function createWebSocketLink() {
-  const token = userService.currentToken
-  return token ? wsLinkwithAuth(token.authToken) : wsLinkwithoutAuth()
+  const token = authService.currentToken
+  return new WebSocketLink({
+    uri: WS_URL,
+    options: {
+      reconnect: true,
+      connectionParams: {
+        Authorization: token ? `Bearer ${token}` : ``,
+      },
+    },
+  })
 }
 
 const errorLink = onError(({ networkError, graphQLErrors }) => {
@@ -61,12 +51,12 @@ const errorLink = onError(({ networkError, graphQLErrors }) => {
 })
 
 const authLink = setContext((_, { headers }) => {
-  const token = userService.currentToken
+  const token = authService.currentToken
   return token
     ? {
         headers: {
           ...headers,
-          authorization: `Bearer ${token.authToken}`,
+          authorization: `Bearer ${token}`,
         },
       }
     : {

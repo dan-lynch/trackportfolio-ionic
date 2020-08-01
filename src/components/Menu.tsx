@@ -25,7 +25,7 @@ import {
 import './Menu.css';
 import Logo from '../assets/logo_light.svg';
 import { withApollo } from '../components/withApollo'
-import { userService } from '../services/userService';
+import { authService } from '../services/authService';
 import { Typography } from '@material-ui/core';
 
 interface AppPage {
@@ -63,15 +63,15 @@ const useStyles = makeStyles(() => ({
 const Menu: React.FC = () => {
 	const location = useLocation();
 	const classes = useStyles();
-	const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!userService.currentToken);
+	const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!authService.currentToken);
 
 	const logout = () => {
-    userService.logout();
+    authService.signout();
     window.location.replace('/');
 	}
 
   useEffect(() => {
-    userService.currentToken ? setIsLoggedIn(true) : setIsLoggedIn(false)
+    authService.currentToken ? setIsLoggedIn(true) : setIsLoggedIn(false)
   }, [])
 	
 	return (
@@ -110,7 +110,7 @@ const Menu: React.FC = () => {
 				<IonIcon slot="start" ios={logOutOutline} md={logOutSharp} />
 				<IonLabel>Logout</IonLabel>
 			</IonButton>
-			<Typography variant='caption'>trackportfol.io BETA v1.0.3</Typography>
+			<Typography variant='caption'>trackportfol.io BETA v1.0.5</Typography>
 			</IonFooter>
 		</IonMenu>
 	)}

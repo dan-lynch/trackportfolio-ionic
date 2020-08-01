@@ -1,6 +1,6 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { Redirect } from 'react-router-dom'
-import { useMutation, useSubscription } from '@apollo/client'
+import { useMutation, useSubscription, useQuery } from '@apollo/client'
 import { Grid, Paper, Typography, TextField, Button, CircularProgress, Collapse } from '@material-ui/core'
 import { Skeleton } from '@material-ui/lab'
 import { makeStyles } from '@material-ui/core/styles'
@@ -11,10 +11,10 @@ import SearchStock from '../components/SearchStock'
 import HoldingView from '../components/HoldingView'
 import { withApollo } from '../components/withApollo'
 import NotificationComponent, { Notification } from '../components/Notification'
-import { AppContext } from '../context/AppContext'
+import { AppContext } from '../context/ContextProvider'
 import { graphqlService } from '../services/graphql'
 import { gaService } from '../services/gaService'
-import { userService } from '../services/userService'
+import { authService } from '../services/authService'
 import { initApolloClient } from '../services/apolloService'
 import { Instrument, Holding } from '../helpers/types'
 import { isNumeric } from '../helpers/misc'
@@ -85,7 +85,17 @@ function Dashboard() {
   const classes = useStyles()
   const appContext = useContext(AppContext)
 
-  const { error, data } = useSubscription(graphqlService.SUBSCRIBE_CURRENT_USER, {
+  const currentUser = useQuery(graphqlService.CURRENT_USER, {
+    variables: {},
+  })
+
+  const { client, error: allHoldingsQueryError, data: allHoldingsQuery } = useQuery(graphqlService.ALL_HOLDINGS, {
+    variables: {
+      pollInterval: 5000,
+    },
+  })
+
+  const { error: allHoldingsSubError, data: allHoldingsSub } = useSubscription(graphqlService.SUBSCRIBE_ALL_HOLDINGS, {
     variables: {},
   })
 
@@ -111,37 +121,54 @@ function Dashboard() {
       })
   }
 
-  const checkUser = async () => {
-    if (!userService.currentToken) {
-      console.log('userService saying not logged in. Logging out...')
-      userService.logout()
-      setToHome(true)
+  useEffect(() => {
+    if (currentUser.data && currentUser.data.currentUser && !currentUser.error) {
+      setUserId(currentUser.data.currentUser.userId)
+      appContext.setIsDarkTheme(currentUser.data.currentUser.prefersDarkTheme)
     }
-  }
+  }, [currentUser, appContext])
 
   useEffect(() => {
-    if (data && !error) {
-      const holdings = data.currentUser.holdingsByUserId.nodes
-      setHoldings(holdings)
-      calculateTotalHoldings(holdings)
-      setUserId(data.currentUser.id)
-      appContext.setIsDarkTheme(data.currentUser.darkTheme)
-      userService.storeUserData(data)
-      setWelcomeMessage(`Welcome to your dashboard, ${data.currentUser.username}!`)
+    async function setUser() {
+      if (authService.currentUser) {
+        authService.currentUser.displayName ?
+          setWelcomeMessage(`Welcome to your dashboard, ${authService.currentUser.displayName}!`) :
+          setWelcomeMessage('Welcome to your dashboard!')
+      } else {
+        const updatedUser = await authService.refreshUser()
+        if (updatedUser) {
+          updatedUser.displayName ?
+            setWelcomeMessage(`Welcome to your dashboard, ${updatedUser.displayName}!`) :
+            setWelcomeMessage('Welcome to your dashboard!')
+        }
+      }
     }
-  }, [data, appContext, error])
+    setUser()
+  }, [])
 
   useEffect(() => {
-    if (error) {
-      if (error.message === 'jwt malformed' || error.message === 'jwt expired') {
-        userService.logout()
+    if (allHoldingsSub && !allHoldingsSubError) {
+        setHoldings(allHoldingsSub.allHoldings.nodes)
+        calculateTotalHoldings(allHoldingsSub.allHoldings.nodes)
+      }
+    else if (allHoldingsQuery && !allHoldingsQueryError) {
+      // Fallback to graphql query if issue with subscription
+      setHoldings(allHoldingsQuery.allHoldings.nodes)
+      calculateTotalHoldings(allHoldingsQuery.allHoldings.nodes)
+    }
+  }, [allHoldingsQuery, allHoldingsSub, allHoldingsQueryError, allHoldingsSubError])
+
+  useEffect(() => {
+    if (allHoldingsQueryError) {
+      if (allHoldingsQueryError.message === 'jwt malformed' || allHoldingsQueryError.message === 'jwt expired') {
+        authService.signout()
         setToHome(true)
       }
     }
-  }, [appContext, error])
+  }, [allHoldingsQueryError])
+
 
   useEffect(() => {
-    checkUser();
     if (!Cookie.getJSON(DISMISS_UPDATE)) {
       setDashboardUpdate({
         show: true,
@@ -150,7 +177,8 @@ function Dashboard() {
         type: 'info',
       })
     }
-  }, [appContext])
+    client.resetStore()
+  }, [client])
 
   const processSearch = (searchQuery: Instrument | null) => {
     if (searchQuery && searchQuery.code) {

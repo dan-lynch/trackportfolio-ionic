@@ -1,14 +1,13 @@
 import React, { useState, useContext } from 'react'
-import { useMutation } from '@apollo/client'
 import { Typography, Grid, Collapse, TextField, Button, CircularProgress, InputAdornment, IconButton } from '@material-ui/core'
 import Visibility from '@material-ui/icons/Visibility'
 import VisibilityOff from '@material-ui/icons/VisibilityOff'
 import { makeStyles, createStyles } from '@material-ui/core/styles'
 import NotificationComponent, { Notification } from '../../components/Notification'
-import { graphqlService } from '../../services/graphql'
 import { useForm } from 'react-hook-form'
 import { gaService } from '../../services/gaService'
-import { AppContext } from '../../context/AppContext'
+import { AppContext } from '../../context/ContextProvider'
+import { authService } from '../../services/authService'
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -35,8 +34,6 @@ export default function UpdatePassword(props: Props) {
   const classes = useStyles()
   const appContext = useContext(AppContext)
 
-  const [updatePasswordMutation] = useMutation(graphqlService.UPDATE_USER_PASSWORD)
-
   const [notification, setNotification] = useState<Notification>({ show: false })
   const [showOldPassword, setShowOldPassword] = useState<boolean>(false)
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false)
@@ -44,23 +41,18 @@ export default function UpdatePassword(props: Props) {
 
   const { register, handleSubmit, errors } = useForm()
 
-  const onSubmit = (values: any) => {
+  const onSubmit = async (values: any) => {
     setLoading(true)
     setNotification({ show: false, type: notification.type })
-    const { oldPassword, newPassword } = values
-    updatePasswordMutation({ variables: { oldPassword: oldPassword, newPassword: newPassword } })
-      .then((response) => {
-        if (response.data.updateUserPassword.updatedUserPassword.success) {
-        setLoading(false)
-        gaService.passwordUpdatedSuccessEvent()
-        passwordUpdated()
-      } else {
-        updatePasswordFailed()
-      }
-      })
-      .catch(() => {
-        updatePasswordFailed()
-      })
+    const { newPassword } = values
+    const updatePasswordResult = await authService.updatePassword(newPassword)
+    if (updatePasswordResult) {
+      setLoading(false)
+      gaService.passwordUpdatedSuccessEvent()
+      passwordUpdated()
+    } else {
+      updatePasswordFailed()
+    }
   }
 
   const updatePasswordFailed = () => {
@@ -127,7 +119,7 @@ export default function UpdatePassword(props: Props) {
               ),
             }}
           />
-                    <TextField
+          <TextField
             id='newPassword'
             inputRef={register({
               required: 'Please enter your desired password',
