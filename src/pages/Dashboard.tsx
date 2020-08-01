@@ -70,6 +70,7 @@ function Dashboard() {
   const [quantityToAdd, setQuantityToAdd] = useState<number | undefined>(0.0)
   const [userId, setUserId] = useState<number | null>(null)
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null)
+  const [displayName, setDisplayName] = useState<string>('')
   const [notification, setNotification] = useState<Notification>({ show: false })
   const [createHoldingLoading, setCreateHoldingLoading] = useState<boolean>(false)
   const [dashboardUpdate, setDashboardUpdate] = useState<Notification>({ show: false })
@@ -131,20 +132,17 @@ function Dashboard() {
   useEffect(() => {
     async function setUser() {
       if (authService.currentUser) {
-        authService.currentUser.displayName ?
-          setWelcomeMessage(`Welcome to your dashboard, ${authService.currentUser.displayName}!`) :
-          setWelcomeMessage('Welcome to your dashboard!')
+        setDisplayName(authService.currentUser.displayName || '')
       } else {
         const updatedUser = await authService.refreshUser()
         if (updatedUser) {
-          updatedUser.displayName ?
-            setWelcomeMessage(`Welcome to your dashboard, ${updatedUser.displayName}!`) :
-            setWelcomeMessage('Welcome to your dashboard!')
+          setDisplayName(updatedUser.displayName || '')
         }
       }
+      displayName ? setWelcomeMessage(`Welcome to your dashboard, ${displayName}!`) : setWelcomeMessage('Welcome to your dashboard!')
     }
     setUser()
-  }, [])
+  }, [displayName])
 
   useEffect(() => {
     if (allHoldingsSub && !allHoldingsSubError) {
@@ -255,7 +253,7 @@ function Dashboard() {
                       <HoldingView
                         id={holding.id}
                         amount={holding.amount}
-                        key={holding.instrumentByInstrumentId.id}
+                        key={holding.id}
                         code={holding.instrumentByInstrumentId.code}
                         price={holding.instrumentByInstrumentId.latestPrice}
                       />

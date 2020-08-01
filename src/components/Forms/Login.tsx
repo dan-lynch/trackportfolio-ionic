@@ -116,7 +116,7 @@ export default function Login(props: Props) {
             fullWidth
             autoFocus
             autoComplete='on'
-            autoCapitalize='off'
+            autoCapitalize='none'
             helperText={errors.email?.message}
             error={!!errors.email}
           />

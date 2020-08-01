@@ -119,7 +119,6 @@ export default function SignUp(props: Props) {
             fullWidth
             autoFocus
             autoComplete='on'
-            autoCapitalize='off'
             helperText={errors.displayName?.message}
             error={!!errors.displayName}
           />
@@ -137,7 +136,7 @@ export default function SignUp(props: Props) {
             variant='outlined'
             fullWidth
             autoComplete='on'
-            autoCapitalize='off'
+            autoCapitalize='none'
             helperText={errors.email?.message}
             error={!!errors.email}
           />

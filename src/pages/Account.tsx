@@ -33,7 +33,7 @@ const useStyles = makeStyles(() =>
     },
     collapse: {
       width: '100%',
-      margin: '0px 1rem',
+      margin: '1.5rem 1rem 0',
     },
     subtitle: {
       paddingTop: '0.125rem',
